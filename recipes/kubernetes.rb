@@ -16,3 +16,5 @@ homebrew_tap 'derailed/k9s' do
   action :untap
 end
 package 'operator-sdk'
+package 'kubectx'
+package 'stern'
