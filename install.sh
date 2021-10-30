@@ -36,7 +36,7 @@ brew install lastpass-cli
 
 # Workstation
 
-[ -d $HOME/.dotfiles ] || git clone https://github.com/gobadiah/workstation
+[ -d $HOME/.dotfiles ] || git clone https://github.com/gobadiah/workstation $HOME/.dotfiles
 
 pushd $HOME/.dotfiles
 
