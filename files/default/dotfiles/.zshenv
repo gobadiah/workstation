@@ -21,3 +21,6 @@ export PATH="$PYENV_ROOT/bin:$PATH"
 if [[ -n $VIRTUAL_ENV && -e "${VIRTUAL_ENV}/bin/activate" ]]; then
   source "${VIRTUAL_ENV}/bin/activate"
 fi
+
+# Krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"

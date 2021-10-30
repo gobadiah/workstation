@@ -18,3 +18,5 @@ end
 package 'operator-sdk'
 package 'kubectx'
 package 'stern'
+package 'istioctl'
+package 'minikube'

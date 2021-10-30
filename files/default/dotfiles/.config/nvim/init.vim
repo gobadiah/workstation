@@ -51,6 +51,7 @@ Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 " python
 Plug 'deoplete-plugins/deoplete-jedi'
 Plug 'davidhalter/jedi-vim'
+Plug 'fisadev/vim-isort'
 " Plug 'mgedmin/python-imports.vim'
 
 Plug 'w0rp/ale'                                 " multilanguage syntax checker
@@ -123,6 +124,9 @@ nnoremap <silent> È :wincmd k<CR>
 nnoremap <silent> Ï :wincmd j<CR>
 nnoremap <silent> Ì :wincmd h<CR>
 nnoremap <silent> ¬ :wincmd l<CR>
+
+" Go
+nnoremap <silent> <F9> :GoCoverageToggle<CR>
 
 " nice syntax
 syntax on
