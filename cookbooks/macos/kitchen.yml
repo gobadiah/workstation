@@ -1,0 +1,154 @@
+---
+driver:
+  name: vagrant
+  provider: parallels
+
+provisioner:
+  product_name: chef
+  multiple_converge: 2
+
+verifier:
+  name: inspec
+  sudo: true
+  reporter:
+  - cli
+  - junit:/tmp/%{suite}-%{platform}-inspec.xml
+  inspec_tests:
+  - test/integration/default
+
+platforms:
+- name: high-sierra-chef16
+  driver:
+    box: microsoft/macos-high-sierra
+    box_version: 10.13.6
+  provisioner:
+    product_version: 16
+
+- name: mojave-chef16
+  driver:
+    box: microsoft/macos-mojave
+    box_version: 10.14.6
+  provisioner:
+    product_version: 16
+
+- name: catalina-chef16
+  driver:
+    box: microsoft/macos-catalina
+    box_version: 10.15.7
+  provisioner:
+    product_version: 16
+
+- name: big-sur-chef16
+  driver:
+    box: microsoft/macos-big-sur
+    box_version: 11.2.1
+  provisioner:
+    product_version: 16
+
+suites:
+- name: default
+  provisioner:
+    multiple_converge: 3
+    enforce_idempotency: true
+  run_list:
+  - recipe[macos_test::preferences]
+  verifier:
+    controls:
+    - dock-appearance
+    - show-all-files
+    - plist-creation
+
+- name: software-updates
+  provisioner:
+    enforce_idempotency: true
+  run_list:
+  - recipe[macos_test::disable_software_updates]
+  verifier:
+    controls:
+    - updates-disabled
+
+- name: power-management
+  provisioner:
+    enforce_idempotency: true
+  run_list:
+  - recipe[macos::keep_awake]
+  verifier:
+    controls:
+    - screensaver-disabled
+    - remote-administration
+    - no-sleep
+
+- name: spotlight
+  provisioner:
+    enforce_idempotency: true
+  run_list:
+  - recipe[macos_test::spotlight]
+  verifier:
+    controls:
+    - indexing-and-searching
+
+- name: xcode-from-apple
+  run_list:
+  - recipe[macos_test::xcode_from_apple]
+  verifier:
+    controls:
+    - xcode-and-simulators
+
+- name: xcode-from-url
+  run_list:
+  - recipe[macos_test::xcode_from_url]
+  attributes:
+    xcode:
+      download_url: <%= ENV['XCODE_URL'] %>
+  verifier:
+    controls:
+    - xcode-and-simulators
+
+- name: command-line-tools
+  run_list:
+  - recipe[macos_test::command_line_tools]
+  verifier:
+    controls:
+    - command-line-tool-sentinel
+    - xcrun
+
+- name: certificate
+  run_list:
+  - recipe[macos_test::certificate]
+  verifier:
+    controls:
+    - certificate-install
+
+- name: users
+  run_list:
+  - recipe[macos_test::new_users]
+  verifier:
+    controls:
+    - admin-user
+    - standard-user
+    - hidden-user
+
+- name: delete-users
+  run_list:
+  - recipe[macos_test::delete_users]
+  verifier:
+    controls:
+    - test-user
+
+- name: keychain
+  run_list:
+  - recipe[macos_test::keychain]
+  verifier:
+    controls:
+    - keychain-creation
+    - login-keychain-creation
+    - default-keychain-creation
+
+- name: remote-access
+  provisioner:
+    enforce_idempotency: true
+  run_list:
+  - recipe[macos_test::remote_access]
+  verifier:
+    controls:
+    - remote-control
