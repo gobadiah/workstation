@@ -17,8 +17,8 @@ bash 'install-neovim-python' do
   pyenv install $PYTHON3_VERSION
   pyenv virtualenv $PYTHON2_VERSION neovim2
   pyenv virtualenv $PYTHON3_VERSION neovim3
-  PYENV_VERSION=neovim2 pip install neovim
-  PYENV_VERSION=neovim3 pip install neovim
+  PYENV_VERSION=neovim2 pip install neovim pynvim
+  PYENV_VERSION=neovim3 pip install neovim pynvim
   EOH
   not_if 'pyenv versions | grep -q neovim2'
 end
