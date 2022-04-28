@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -8,7 +15,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="powerlevel9k/powerlevel9k"
+ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -68,10 +75,25 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions kubectl zsh-syntax-highlighting zsh-completions autojump history-search-multi-word)
+plugins=(git zsh-autosuggestions kubectl zsh-syntax-highlighting zsh-completions autojump history-search-multi-word terraform)
 autoload -U compinit && compinit
 
 source $ZSH/oh-my-zsh.sh
+
+### Fix slowness of pastes with zsh-syntax-highlighting.zsh
+pasteinit() {
+  OLD_SELF_INSERT=${${(s.:.)widgets[self-insert]}[2,3]}
+  zle -N self-insert url-quote-magic # I wonder if you'd need `.url-quote-magic`?
+}
+
+pastefinish() {
+  zle -N self-insert $OLD_SELF_INSERT
+}
+zstyle :bracketed-paste-magic paste-init pasteinit
+zstyle :bracketed-paste-magic paste-finish pastefinish
+### Fix slowness of pastes
+
+source ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 # User configuration
 
@@ -107,6 +129,17 @@ eval "$(pyenv virtualenv-init -)"
 alias vim=nvim
 alias c=docker-compose
 alias n=nvim
+function bitback() {
+  k get pv -o json --context services.ubble.ai | jq -r '.items[] | select(.spec.claimRef.name | contains("bitwarden")) | .spec.csi.volumeHandle,.spec.claimRef.name' | xargs -L 2 bash -c "echo aws ec2 create-snapshot --volume-id=\$0 --description=\$1-$(date '+%Y-%m-%d') --endpoint-url=https://fcu.eu-west-2.outscale.com" | AWS_PROFILE=ubbleai-os-services bash
+}
+
+function start-bastion() {
+  aws ec2 start-instances  --endpoint-url https://fcu.eu-west-2.outscale.com --instance-ids $(aws ec2 describe-instances --endpoint-url https://fcu.eu-west-2.outscale.com | jq -r '.Reservations[] | select(.Instances[0].State.Name != "terminated") | select(.Groups[0].GroupName | contains("bastion-security-group")) | .Instances[0].InstanceId') | jq
+}
+
+function stop-bastion() {
+  aws ec2 stop-instances  --endpoint-url https://fcu.eu-west-2.outscale.com --instance-ids $(aws ec2 describe-instances --endpoint-url https://fcu.eu-west-2.outscale.com | jq -r '.Reservations[] | select(.Instances[0].State.Name != "terminated") | select(.Groups[0].GroupName | contains("bastion-security-group")) | .Instances[0].InstanceId') | jq
+}
 
 # git alias
 # clean local branches
@@ -145,3 +178,6 @@ HISTFILE=~/.zsh_history
 # End Nix
 
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
